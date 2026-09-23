@@ -186,6 +186,22 @@
               "path": ["api", "drivers", "d_bob", "rides"]
             }
           }
+        },
+        {
+          "name": "Driver Cancel Active Ride",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Driver vehicle issue\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/drivers/d_bob/cancel-active-ride",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "drivers", "d_bob", "cancel-active-ride"]
+            }
+          }
         }
       ]
     },
@@ -406,6 +422,22 @@
               "raw": "{{baseUrl}}/api/rides/calculate-distance",
               "host": ["{{baseUrl}}"],
               "path": ["api", "rides", "calculate-distance"]
+            }
+          }
+        },
+        {
+          "name": "Assign Driver to Ride",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"driverId\": \"d_bob\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/{{rideId}}/assign",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "{{rideId}}", "assign"]
             }
           }
         }

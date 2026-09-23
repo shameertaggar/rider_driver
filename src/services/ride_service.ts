@@ -117,8 +117,11 @@ export class RideService {
 
     const radius = dto.maxRadiusKm ?? this.defaultMaxRadiusKm;
 
-    // 3. Get available driver pool from DB
-    const available = this.driverRepo.findAvailableDriversWithCabs();
+    // 3. Get available driver pool from DB (filter out drivers already assigned to an active ride)
+    const available = this.driverRepo.findAvailableDriversWithCabs().filter(item => {
+      const activeRides = this.rideRepo.findOngoingRidesByDriverId(item.driver.id);
+      return activeRides.length === 0;
+    });
     if (available.length === 0) throw new Error('No drivers currently available');
 
     // 4. Run matching strategy (handles free upgrade logic internally)
@@ -134,6 +137,15 @@ export class RideService {
       const current = this.driverRepo.findDriverById(match.driver.id);
       if (!current || current.status !== DriverStatus.AVAILABLE) {
         throw new Error(`Driver ${match.driver.id} is no longer available`);
+      }
+
+      // Re-verify driver has no active assigned/booked rides
+      const activeDriverRides = this.rideRepo.findOngoingRidesByDriverId(match.driver.id);
+      if (activeDriverRides.length > 0) {
+        const active = activeDriverRides[0];
+        throw new Error(
+          `Driver ${match.driver.id} is already assigned to ride ${active.id} (status: '${active.status}'). The current ride must be cancelled or completed before accepting another ride.`
+        );
       }
 
       // Mark driver ON_TRIP
@@ -160,6 +172,46 @@ export class RideService {
     } finally {
       this.driverRepo.releaseDriverLock(match.driver.id);
     }
+  }
+
+  /**
+   * Assign or accept a ride for a driver.
+   * Enforces: If driver is already booked/assigned to any user, they must cancel or complete current ride first.
+   */
+  public assignDriverToRide(rideId: string, driverId: string): Ride {
+    const driver = this.driverRepo.findDriverById(driverId);
+    if (!driver) throw new Error(`Driver ${driverId} not found`);
+
+    const activeRides = this.rideRepo.findOngoingRidesByDriverId(driverId);
+    if (activeRides.length > 0) {
+      const current = activeRides[0];
+      throw new Error(
+        `Driver ${driverId} is already assigned to ride ${current.id} (status: '${current.status}'). The current ride must be cancelled or completed before accepting another ride.`
+      );
+    }
+
+    const ride = this.rideRepo.findById(rideId);
+    if (!ride) throw new Error(`Ride ${rideId} not found`);
+    if (ride.status !== RideStatus.REQUESTED) {
+      throw new Error(`Cannot assign driver to ride with status '${ride.status}'`);
+    }
+
+    const cab = this.driverRepo.findCabByDriverId(driverId);
+    if (!cab) throw new Error(`No cab registered for driver ${driverId}`);
+
+    ride.driverId = driverId;
+    ride.cabId = cab.id;
+    this.driverRepo.updateDriverStatus(driverId, DriverStatus.ON_TRIP);
+    return this.rideRepo.update(ride);
+  }
+
+  /** Cancel active ride for a driver so they can accept another ride. */
+  public cancelDriverActiveRide(driverId: string, reason?: string): Ride {
+    const activeRides = this.rideRepo.findOngoingRidesByDriverId(driverId);
+    if (activeRides.length === 0) {
+      throw new Error(`Driver ${driverId} has no active ride to cancel`);
+    }
+    return this.cancelRide(activeRides[0].id, reason || `Cancelled by driver ${driverId}`);
   }
 
   public startRide(rideId: string): Ride {

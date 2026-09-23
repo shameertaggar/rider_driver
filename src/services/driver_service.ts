@@ -64,6 +64,14 @@ export class DriverService {
   }
 
   public updateDriverStatus(driverId: string, status: DriverStatus): boolean {
+    if (status === DriverStatus.AVAILABLE) {
+      const activeRides = this.rideRepo.findOngoingRidesByDriverId(driverId);
+      if (activeRides.length > 0) {
+        throw new Error(
+          `Driver ${driverId} has an active ride (${activeRides[0].id}). The current ride must be cancelled or completed before becoming available.`
+        );
+      }
+    }
     return this.driverRepo.updateDriverStatus(driverId, status);
   }
 

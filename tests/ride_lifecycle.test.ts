@@ -202,4 +202,47 @@ describe('Ride Lifecycle', () => {
     });
     expect(r3.id).toBeDefined();
   });
+
+  it('prevents a driver with an active ride from accepting another ride until the current ride is cancelled or completed', () => {
+    userService.registerUser({ id: 'u1', name: 'Rider1' });
+    userService.registerUser({ id: 'u2', name: 'Rider2' });
+
+    driverService.registerDriver({ id: 'd1', name: 'Driver Dave' });
+    driverService.registerCab({
+      id: 'c1', driverId: 'd1', carType: CarType.HATCHBACK,
+      licensePlate: 'KA-01-1111', initialLocation: { x: 0, y: 0 },
+    });
+
+    // 1. Rider 1 books Driver Dave
+    const r1 = rideService.bookRide({
+      userId: 'u1', pickupLocation: { x: 0, y: 0 },
+      dropLocation: { x: 2, y: 2 }, requestedCarType: CarType.HATCHBACK,
+    });
+    expect(r1.driverId).toBe('d1');
+
+    // 2. Rider 2 attempts to book: Driver Dave is on active ride, so no drivers available
+    expect(() =>
+      rideService.bookRide({
+        userId: 'u2', pickupLocation: { x: 0, y: 0 },
+        dropLocation: { x: 5, y: 5 }, requestedCarType: CarType.HATCHBACK,
+      })
+    ).toThrow(/No drivers currently available/);
+
+    // 3. Driver cannot force status to AVAILABLE while on active ride
+    expect(() => driverService.updateDriverStatus('d1', DriverStatus.AVAILABLE)).toThrow(
+      /The current ride must be cancelled or completed before becoming available/
+    );
+
+    // 4. Driver cancels the current ride
+    const cancelled = rideService.cancelDriverActiveRide('d1', 'Driver vehicle breakdown');
+    expect(cancelled.status).toBe(RideStatus.CANCELLED);
+    expect(driverService.getDriver('d1').status).toBe(DriverStatus.AVAILABLE);
+
+    // 5. Now Driver Dave is free and can accept a ride from Rider 2
+    const r2 = rideService.bookRide({
+      userId: 'u2', pickupLocation: { x: 0, y: 0 },
+      dropLocation: { x: 5, y: 5 }, requestedCarType: CarType.HATCHBACK,
+    });
+    expect(r2.driverId).toBe('d1');
+  });
 });

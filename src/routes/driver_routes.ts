@@ -1,8 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { DriverService } from '../services/driver_service.js';
+import { RideService } from '../services/ride_service.js';
 
 const router = Router();
 const driverService = new DriverService();
+const rideService = new RideService();
 
 // POST /api/drivers — Register a new driver
 router.post('/', (req: Request, res: Response) => {
@@ -69,6 +71,16 @@ router.get('/:id/rides', (req: Request, res: Response) => {
     res.json({ success: true, data: history });
   } catch (err: any) {
     res.status(404).json({ success: false, error: err.message });
+  }
+});
+
+// PUT /api/drivers/:id/cancel-active-ride — Driver cancels current active ride to become available for other rides
+router.put('/:id/cancel-active-ride', (req: Request, res: Response) => {
+  try {
+    const ride = rideService.cancelDriverActiveRide(req.params.id as string, req.body?.reason);
+    res.json({ success: true, message: 'Current ride cancelled by driver', data: ride });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
   }
 });
 

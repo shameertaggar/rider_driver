@@ -254,6 +254,23 @@ To test the complete lifecycle in Postman or cURL, run these in order:
   curl -X GET http://localhost:3000/api/drivers/d_bob/rides
   ```
 
+### 3.8 Driver Cancel Active Ride (Free Up Driver)
+- **Method**: `PUT`
+- **URL**: `http://localhost:3000/api/drivers/{DRIVER_ID}/cancel-active-ride`
+- **Description**: If a driver is currently assigned or on an active ride, they cannot accept another ride until they cancel or complete the current ride. This endpoint cancels the driver's active ride and marks them `AVAILABLE` again.
+- **Body (JSON)**:
+  ```json
+  {
+    "reason": "Driver vehicle issue / emergency"
+  }
+  ```
+- **cURL**:
+  ```bash
+  curl -X PUT http://localhost:3000/api/drivers/d_bob/cancel-active-ride \
+    -H "Content-Type: application/json" \
+    -d '{"reason": "Driver vehicle issue"}'
+  ```
+
 ---
 
 ## 4. Coupons API (`/api/coupons`)
@@ -655,6 +672,25 @@ Calculate distance between any two 2D coordinates on-the-fly using Euclidean or 
     "strategy": "MANHATTAN",
     "strategyName": "Manhattan Distance Strategy"
   }
+  ```
+
+---
+
+### 5.10 Assign Driver to Ride (with Double-Booking Protection)
+- **Method**: `PUT`
+- **URL**: `http://localhost:3000/api/rides/{RIDE_ID}/assign`
+- **Rule**: If the driver is already assigned/booked to any active ride (`REQUESTED` or `ONGOING`), this request is blocked. The driver must cancel or complete their current ride before accepting another ride.
+- **Body (JSON)**:
+  ```json
+  {
+    "driverId": "d_bob"
+  }
+  ```
+- **cURL**:
+  ```bash
+  curl -X PUT http://localhost:3000/api/rides/YOUR_RIDE_ID/assign \
+    -H "Content-Type: application/json" \
+    -d '{"driverId": "d_bob"}'
   ```
 
 ---

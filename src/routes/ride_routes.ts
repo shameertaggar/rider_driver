@@ -117,4 +117,19 @@ router.put('/strategy', (req: Request, res: Response) => {
   res.json({ success: true, message: `Matching strategy set to ${rideService.getMatchingStrategy().strategyName}` });
 });
 
+// PUT /api/rides/:id/assign — Assign/accept driver for ride
+router.put('/:id/assign', (req: Request, res: Response) => {
+  try {
+    const { driverId } = req.body;
+    if (!driverId) {
+      res.status(400).json({ success: false, error: 'driverId is required' });
+      return;
+    }
+    const ride = rideService.assignDriverToRide(req.params.id as string, driverId);
+    res.json({ success: true, message: `Driver ${driverId} successfully assigned to ride`, data: ride });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
 export default router;
