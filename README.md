@@ -36,6 +36,78 @@ npm run dev
 
 ---
 
+## Postman API Collection
+
+To test all endpoints with Postman:
+1. Open **Postman**.
+2. Click **Import** (top left).
+3. Select the file [`postman_collection.json`](./postman_collection.json) located in the root of this repository.
+4. The collection is pre-configured with the collection variable `baseUrl = http://localhost:3000`.
+5. Start the server with `npm start`, and execute any request from the 7 organized folders:
+   - **0. System Health**: `GET /health`
+   - **1. User Management**: Register User, Get User, Get All Users, User Ride History
+   - **2. Driver & Cab Management**: Register Driver, Register Cab, Update Location, Update Status, Driver Ride History, Driver Cancel Active Ride
+   - **3. Distance Strategy**: Get Distance Strategy, Set Strategy (`EUCLIDEAN` / `MANHATTAN`), Calculate Distance between any two points
+   - **4. Matching Strategy**: Get Matching Strategy, Set Strategy (`NEAREST_DRIVER` / `HIGHEST_RATED_DRIVER`)
+   - **5. Coupon Management**: Create Flat/Percentage Coupon, Get Coupon, List Coupons, Delete Coupon
+   - **6. Ride Lifecycle**: Book Ride, Assign Driver to Ride, Start Ride, End Ride (with fare breakdown), Cancel Ride, Get Ride Details
+
+---
+
+## Application Features
+
+### 1. User & Driver Management
+- **Rider Registration**: Register users with unique IDs, names, emails, and phone numbers. Includes strict validation against empty/whitespace names.
+- **Driver & Cab Onboarding**: Register drivers with initial ratings, link cabs with vehicle license plates, car types (`HATCHBACK`, `SEDAN`, `SUV`), and initial GPS coordinates.
+- **Real-Time Location Tracking**: Continuously update cab coordinates on-demand, even while the driver is `ON_TRIP`.
+- **Automatic Cab Relocation**: Upon ride completion, the driver’s cab location automatically relocates to the drop-off coordinates.
+
+### 2. Strategy Patterns (Extensible & Runtime Switchable)
+- **Pluggable Distance Calculation**:
+  - `EuclideanDistanceStrategy`: Computes straight-line distance: $\sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}$.
+  - `ManhattanDistanceStrategy`: Computes city-block distance: $|x_2-x_1| + |y_2-y_1|$.
+  - Switchable at runtime via API (`PUT /api/rides/distance-strategy`) and dedicated calculation endpoint (`POST /api/rides/calculate-distance`).
+- **Pluggable Driver Matching**:
+  - `NearestDriverMatchingStrategy`: Dispatches the geographically closest available driver within the radius.
+  - `HighestRatedDriverMatchingStrategy`: Dispatches the highest-rated driver within the radius (ties broken by distance).
+  - Switchable dynamically via API (`PUT /api/rides/matching-strategy`).
+
+### 3. Smart Vehicle Dispatch & Upgrades
+- **Free Sedan Upgrade**: If a rider requests a `HATCHBACK` but none are available within the search radius, the system automatically upgrades the rider to a `SEDAN` while billing them at the lower `HATCHBACK` rate (`isUpgraded = true`).
+- **Strict Downgrade Prevention**: If a rider requests a `SEDAN`, the system will **never** assign a `HATCHBACK`, returning an informative error if no Sedans are found.
+
+### 4. Tiered & Surge Pricing Engine
+- **Continuous Distance Tiers**:
+  - 0–2 km @ ₹10/km
+  - 2–5 km @ ₹8/km
+  - 5+ km @ ₹5/km
+- **Minimum Fare Floor**: Guarantees a minimum fare of **₹50** (`Math.max(minFare, calculatedFare)`).
+- **Car-Type Multipliers**: `HATCHBACK` (1.0x), `SEDAN` (1.2x/1.5x), `SUV` (2.0x).
+- **Demand/Supply Surge Pricing**: Area-based surge calculator applying up to 2.0x multiplier based on active rider demand vs. available drivers.
+
+### 5. Coupon & Promotions Engine
+- **Dual Discount Modes**: Supports `FLAT` currency deductions (e.g. ₹20 off) and `PERCENTAGE` discounts (e.g. 20% off) with optional `maxDiscount` caps.
+- **Threshold & Expiry Validation**: Enforces optional `minRideFare` eligibility, expiration dates, and maximum `usageLimit` tracking.
+- **Integrity Validation**: Rejects duplicate codes, negative discounts, percentages $>100\%$, and deleted/inactive coupons.
+
+### 6. Ride Lifecycle & Integrity Constraints
+- **Single Active Ride per Rider**: Riders cannot book a second ride while an existing ride is `REQUESTED` or `ONGOING`.
+- **Single Active Ride per Driver**: Drivers cannot be double-booked or assigned to multiple trips simultaneously.
+- **Driver Availability Guard**: A driver cannot set their status to `AVAILABLE` without completing or cancelling their active ride (`PUT /api/drivers/:id/cancel-active-ride`).
+- **Cancellation Policy**: ₹0 fee if cancelled while `REQUESTED`; ₹30 fee if cancelled after starting (`ONGOING`).
+
+### 7. Concurrency Safety (Bonus)
+- **Atomic Driver Locks**: Single-process atomic mutex locks (`acquireDriverLock` / `releaseDriverLock`) prevent race conditions when two users attempt to book the exact same driver simultaneously.
+
+### 8. Ride History & Audit Trail
+- Separate ride history queries for Riders (`GET /api/users/:id/rides`) and Drivers (`GET /api/drivers/:id/rides`), segmented into `ongoing`, `completed`, and `all` rides.
+
+### 9. Dual User Interfaces
+- **Interactive CLI Demo**: Run `npm run demo` to watch an automated 8-scenario live walkthrough in the terminal.
+- **RESTful API**: 18+ endpoints serving JSON responses with full error handling.
+
+---
+
 ## 1. Assumptions
 
 ### 1.1 Spatial Coordinates & Distance Calculation
