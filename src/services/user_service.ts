@@ -18,12 +18,12 @@ export class UserService {
   }
 
   public registerUser(dto: RegisterUserDto): User {
-    if (!dto.id || !dto.name) throw new Error('User ID and Name are required');
-    if (this.userRepo.exists(dto.id)) throw new Error(`User ${dto.id} already exists`);
+    if (!dto.id?.trim() || !dto.name?.trim()) throw new Error('User ID and Name are required');
+    if (this.userRepo.exists(dto.id.trim())) throw new Error(`User ${dto.id} already exists`);
 
     const user: User = {
-      id: dto.id,
-      name: dto.name,
+      id: dto.id.trim(),
+      name: dto.name.trim(),
       email: dto.email,
       phone: dto.phone,
       createdAt: new Date(),

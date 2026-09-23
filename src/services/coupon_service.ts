@@ -8,10 +8,24 @@ export class CouponService {
     this.couponRepo = couponRepo;
   }
 
-  public addCoupon(coupon: Omit<Coupon, 'usedCount'> & { usedCount?: number }): Coupon {
+  public addCoupon(coupon: Omit<Coupon, 'usedCount' | 'isActive'> & { usedCount?: number; isActive?: boolean }): Coupon {
+    if (!coupon.code?.trim()) {
+      throw new Error('Coupon code is required');
+    }
+    const cleanCode = coupon.code.toUpperCase().trim();
+    if (this.couponRepo.findByCode(cleanCode)) {
+      throw new Error(`Duplicate coupon code: '${cleanCode}' already exists`);
+    }
+    if (coupon.discountValue === undefined || coupon.discountValue < 0) {
+      throw new Error('Discount value cannot be negative or missing');
+    }
+    if (coupon.discountType === 'PERCENTAGE' && coupon.discountValue > 100) {
+      throw new Error('Discount percentage cannot exceed 100%');
+    }
+
     return this.couponRepo.save({
       ...coupon,
-      code: coupon.code.toUpperCase().trim(),
+      code: cleanCode,
       usedCount: coupon.usedCount ?? 0,
       isActive: coupon.isActive ?? true,
     });

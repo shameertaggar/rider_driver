@@ -1,4 +1,4 @@
-import { Driver, Cab, DriverStatus, CarType, Location, Ride } from '../models/modelsIndex.js';
+import { Driver, Cab, DriverStatus, CarType, Location, Ride, validateLocation } from '../models/modelsIndex.js';
 import { DriverRepository, RideRepository } from '../db/dbIndex.js';
 
 export interface RegisterDriverDto {
@@ -25,12 +25,12 @@ export class DriverService {
   }
 
   public registerDriver(dto: RegisterDriverDto): Driver {
-    if (!dto.id || !dto.name) throw new Error('Driver ID and Name are required');
-    if (this.driverRepo.findDriverById(dto.id)) throw new Error(`Driver ${dto.id} already exists`);
+    if (!dto.id?.trim() || !dto.name?.trim()) throw new Error('Driver ID and Name are required');
+    if (this.driverRepo.findDriverById(dto.id.trim())) throw new Error(`Driver ${dto.id} already exists`);
 
     const driver: Driver = {
-      id: dto.id,
-      name: dto.name,
+      id: dto.id.trim(),
+      name: dto.name.trim(),
       rating: dto.rating ?? 5.0,
       status: DriverStatus.AVAILABLE,
       createdAt: new Date(),
@@ -39,9 +39,14 @@ export class DriverService {
   }
 
   public registerCab(dto: RegisterCabDto): Cab {
+    if (!dto.carType || !Object.values(CarType).includes(dto.carType)) {
+      throw new Error(`Invalid or missing car type: ${dto.carType}`);
+    }
     if (!this.driverRepo.findDriverById(dto.driverId)) {
       throw new Error(`Driver ${dto.driverId} not found`);
     }
+    validateLocation(dto.initialLocation);
+
     const cab: Cab = {
       id: dto.id,
       driverId: dto.driverId,
@@ -53,11 +58,13 @@ export class DriverService {
   }
 
   public updateCabLocation(cabId: string, location: Location): boolean {
+    validateLocation(location);
     if (!this.driverRepo.findCabById(cabId)) throw new Error(`Cab ${cabId} not found`);
     return this.driverRepo.updateCabLocation(cabId, location);
   }
 
   public updateDriverLocationByDriverId(driverId: string, location: Location): boolean {
+    validateLocation(location);
     const cab = this.driverRepo.findCabByDriverId(driverId);
     if (!cab) throw new Error(`No cab found for driver ${driverId}`);
     return this.driverRepo.updateCabLocation(cab.id, location);

@@ -1,5 +1,5 @@
 import {
-  Ride, RideStatus, CarType, Location, DriverStatus,
+  Ride, RideStatus, CarType, Location, DriverStatus, validateLocation,
 } from '../models/modelsIndex.js';
 import {
   UserRepository, DriverRepository, RideRepository, CouponRepository,
@@ -96,6 +96,13 @@ export class RideService {
   }
 
   public bookRide(dto: BookRideDto): Ride {
+    // 0. Validate locations & car type
+    if (!dto.requestedCarType || !Object.values(CarType).includes(dto.requestedCarType)) {
+      throw new Error(`Invalid or missing requested car type: ${dto.requestedCarType}`);
+    }
+    validateLocation(dto.pickupLocation);
+    validateLocation(dto.dropLocation);
+
     // 1. Verify user
     const user = this.userRepo.findById(dto.userId);
     if (!user) throw new Error(`User ${dto.userId} does not exist`);
@@ -231,6 +238,9 @@ export class RideService {
       throw new Error(`Cannot end ride with status ${ride.status}`);
     }
 
+    if (actualEndLocation) {
+      validateLocation(actualEndLocation);
+    }
     const drop = actualEndLocation ?? { ...ride.dropLocation };
     const distCalc: DistanceStrategy = ride.distanceStrategy === 'MANHATTAN'
       ? new ManhattanDistanceStrategy()

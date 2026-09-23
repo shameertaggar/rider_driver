@@ -38,7 +38,14 @@ export class TieredPricingStrategy implements PricingStrategy {
   }
 
   public calculateFare(params: PricingParams): FareBreakdown {
-    const { distanceKm, billedCarType, assignedCarType, isUpgraded, coupon, surgeMultiplier = 1.0 } = params;
+    const {
+      distanceKm,
+      billedCarType,
+      assignedCarType = billedCarType,
+      isUpgraded = false,
+      coupon,
+      surgeMultiplier = 1.0,
+    } = params;
     const dist = Math.max(0, distanceKm);
 
     // 1. Tiered calculation
