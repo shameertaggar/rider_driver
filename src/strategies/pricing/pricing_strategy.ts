@@ -1,5 +1,4 @@
-import { CarType, FareBreakdown } from '../../models/index.js';
-import { Coupon } from '../../models/index.js';
+import { CarType, FareBreakdown, Coupon } from '../../models/modelsIndex.js';
 
 export interface PricingParams {
   distanceKm: number;

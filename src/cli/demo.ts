@@ -3,7 +3,7 @@ import { DriverService } from '../services/driver_service.js';
 import { RideService } from '../services/ride_service.js';
 import { CouponService } from '../services/coupon_service.js';
 import { InMemoryStore } from '../db/in_memory_store.js';
-import { CarType, DiscountType } from '../models/index.js';
+import { CarType, DiscountType } from '../models/modelsIndex.js';
 import { HighestRatedDriverMatchingStrategy } from '../strategies/matching/rating_driver.js';
 
 // ── Helpers ──

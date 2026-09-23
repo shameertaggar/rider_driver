@@ -1,4 +1,4 @@
-import { Driver, Cab, CarType, Location } from '../../models/index.js';
+import { Driver, Cab, CarType, Location } from '../../models/modelsIndex.js';
 import { DistanceStrategy } from '../distance/distance_strategy.js';
 
 export interface MatchCandidate {

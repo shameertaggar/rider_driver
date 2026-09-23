@@ -1,4 +1,4 @@
-import { Driver, Cab, DriverStatus, Location } from '../models/index.js';
+import { Driver, Cab, DriverStatus, Location } from '../models/modelsIndex.js';
 import { InMemoryStore } from './in_memory_store.js';
 
 export class DriverRepository {

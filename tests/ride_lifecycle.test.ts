@@ -3,7 +3,7 @@ import { InMemoryStore } from '../src/db/in_memory_store.js';
 import { UserService } from '../src/services/user_service.js';
 import { DriverService } from '../src/services/driver_service.js';
 import { RideService } from '../src/services/ride_service.js';
-import { CarType, DriverStatus, RideStatus } from '../src/models/index.js';
+import { CarType, DriverStatus, RideStatus } from '../src/models/modelsIndex.js';
 
 describe('Ride Lifecycle', () => {
   let userService: UserService;

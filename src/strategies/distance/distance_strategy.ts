@@ -1,4 +1,4 @@
-import { Location } from '../../models/index.js';
+import { Location } from '../../models/modelsIndex.js';
 
 export interface DistanceStrategy {
   readonly strategyName: string;

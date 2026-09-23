@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { NearestDriverMatchingStrategy } from '../src/strategies/matching/nearest_driver.js';
 import { HighestRatedDriverMatchingStrategy } from '../src/strategies/matching/rating_driver.js';
-import { Driver, Cab, DriverStatus, CarType } from '../src/models/index.js';
+import { Driver, Cab, DriverStatus, CarType } from '../src/models/modelsIndex.js';
 
 // Test data
 const d1: Driver = { id: 'd1', name: 'Alice', rating: 4.5, status: DriverStatus.AVAILABLE, createdAt: new Date() };

@@ -1,4 +1,4 @@
-import { Location } from '../../models/index.js';
+import { Location } from '../../models/modelsIndex.js';
 import { DistanceStrategy } from './distance_strategy.js';
 
 /**

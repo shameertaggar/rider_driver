@@ -1,4 +1,4 @@
-import { CAR_TYPE_MULTIPLIERS, FareBreakdown, TierDetail, DiscountType } from '../../models/index.js';
+import { CAR_TYPE_MULTIPLIERS, FareBreakdown, TierDetail, DiscountType } from '../../models/modelsIndex.js';
 import { PricingParams, PricingStrategy } from './pricing_strategy.js';
 
 export interface TierConfig {

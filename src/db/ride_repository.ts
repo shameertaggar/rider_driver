@@ -1,4 +1,4 @@
-import { Ride, RideStatus } from '../models/index.js';
+import { Ride, RideStatus } from '../models/modelsIndex.js';
 import { InMemoryStore } from './in_memory_store.js';
 
 export class RideRepository {

@@ -1,4 +1,4 @@
-import { User } from '../models/index.js';
+import { User } from '../models/modelsIndex.js';
 import { InMemoryStore } from './in_memory_store.js';
 
 export class UserRepository {

@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   EuclideanDistanceStrategy,
   ManhattanDistanceStrategy,
-} from '../src/strategies/distance/index.js';
-import { Location } from '../src/models/index.js';
+} from '../src/strategies/distance/distanceIndex.js';
+import { Location } from '../src/models/modelsIndex.js';
 
 describe('Distance Calculation Strategies', () => {
   const p1: Location = { x: 0, y: 0 };

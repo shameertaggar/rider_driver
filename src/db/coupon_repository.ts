@@ -1,4 +1,4 @@
-import { Coupon } from '../models/index.js';
+import { Coupon } from '../models/modelsIndex.js';
 import { InMemoryStore } from './in_memory_store.js';
 
 export class CouponRepository {

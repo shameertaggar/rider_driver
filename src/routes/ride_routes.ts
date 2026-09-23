@@ -5,7 +5,7 @@ import {
   NearestDriverMatchingStrategy,
   EuclideanDistanceStrategy,
   ManhattanDistanceStrategy,
-} from '../strategies/index.js';
+} from '../strategies/strategiesIndex.js';
 
 const router = Router();
 const rideService = new RideService();

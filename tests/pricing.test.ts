@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { TieredPricingStrategy } from '../src/strategies/pricing/tiered_pricing.js';
 import { DemandSupplySurgeCalculator } from '../src/strategies/pricing/surge_pricing.js';
-import { CarType, DiscountType, Coupon } from '../src/models/index.js';
+import { CarType, DiscountType, Coupon } from '../src/models/modelsIndex.js';
 
 describe('TieredPricingStrategy', () => {
   const pricing = new TieredPricingStrategy(50);

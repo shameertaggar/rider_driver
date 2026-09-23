@@ -1,4 +1,4 @@
-import { User, Driver, Cab, Ride, Coupon } from '../models/index.js';
+import { User, Driver, Cab, Ride, Coupon } from '../models/modelsIndex.js';
 
 /**
  * InMemoryStore — Central in-memory database singleton.

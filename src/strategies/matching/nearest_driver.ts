@@ -1,6 +1,6 @@
-import { Driver, Cab, CarType, Location } from '../../models/index.js';
+import { Driver, Cab, CarType, Location } from '../../models/modelsIndex.js';
 import { DriverMatchingStrategy, MatchCandidate, MatchResult } from './matching_strategy.js';
-import { DistanceStrategy, EuclideanDistanceStrategy } from '../distance/index.js';
+import { DistanceStrategy, EuclideanDistanceStrategy } from '../distance/distanceIndex.js';
 
 /**
  * Selects the nearest available driver within radius.
