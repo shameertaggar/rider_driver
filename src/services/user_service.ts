@@ -1,5 +1,5 @@
-import { User, Ride } from '../models/index.js';
-import { UserRepository, RideRepository } from '../db/index.js';
+import { User, Ride } from '../models/modelsIndex.js';
+import { UserRepository, RideRepository } from '../db/dbIndex.js';
 
 export interface RegisterUserDto {
   id: string;

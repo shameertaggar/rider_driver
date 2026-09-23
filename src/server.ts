@@ -1,5 +1,5 @@
 import express from 'express';
-import { userRoutes, driverRoutes, rideRoutes, couponRoutes } from './routes/index.js';
+import { userRoutes, driverRoutes, rideRoutes, couponRoutes } from './routes/routesIndex.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;

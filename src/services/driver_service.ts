@@ -1,5 +1,5 @@
-import { Driver, Cab, DriverStatus, CarType, Location, Ride } from '../models/index.js';
-import { DriverRepository, RideRepository } from '../db/index.js';
+import { Driver, Cab, DriverStatus, CarType, Location, Ride } from '../models/modelsIndex.js';
+import { DriverRepository, RideRepository } from '../db/dbIndex.js';
 
 export interface RegisterDriverDto {
   id: string;

@@ -1,5 +1,5 @@
-import { Coupon } from '../models/index.js';
-import { CouponRepository } from '../db/index.js';
+import { Coupon } from '../models/modelsIndex.js';
+import { CouponRepository } from '../db/dbIndex.js';
 
 export class CouponService {
   private couponRepo: CouponRepository;

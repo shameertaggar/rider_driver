@@ -1,14 +1,14 @@
 import {
   Ride, RideStatus, CarType, Location, DriverStatus,
-} from '../models/index.js';
+} from '../models/modelsIndex.js';
 import {
   UserRepository, DriverRepository, RideRepository, CouponRepository,
-} from '../db/index.js';
+} from '../db/dbIndex.js';
 import {
   PricingStrategy, TieredPricingStrategy,
   DriverMatchingStrategy, NearestDriverMatchingStrategy,
   DistanceStrategy, EuclideanDistanceStrategy, ManhattanDistanceStrategy,
-} from '../strategies/index.js';
+} from '../strategies/strategiesIndex.js';
 import { CouponService } from './coupon_service.js';
 
 export interface BookRideDto {

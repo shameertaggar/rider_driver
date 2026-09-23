@@ -1,0 +1,415 @@
+{
+  "info": {
+    "name": "Ride Hailing Service API",
+    "description": "Postman Collection for testing all APIs of Ride Hailing Service including Euclidean & Manhattan distance strategies",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "rideId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "0. System Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "1. Users",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"u_alice\",\n  \"name\": \"Alice Smith\",\n  \"email\": \"alice@example.com\",\n  \"phone\": \"+919876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "List All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get User By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/u_alice",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "u_alice"]
+            }
+          }
+        },
+        {
+          "name": "Get User Ride History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/u_alice/rides",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "u_alice", "rides"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Drivers & Cabs",
+      "item": [
+        {
+          "name": "Register Driver",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"d_bob\",\n  \"name\": \"Bob Driver\",\n  \"rating\": 4.9\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/drivers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "drivers"]
+            }
+          }
+        },
+        {
+          "name": "Register Cab",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"cab_1\",\n  \"driverId\": \"d_bob\",\n  \"carType\": \"HATCHBACK\",\n  \"licensePlate\": \"KA-01-AB-1234\",\n  \"initialLocation\": { \"x\": 1.0, \"y\": 1.0 }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/drivers/cab",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "drivers", "cab"]
+            }
+          }
+        },
+        {
+          "name": "List All Drivers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/drivers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "drivers"]
+            }
+          }
+        },
+        {
+          "name": "Get Driver By ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/drivers/d_bob",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "drivers", "d_bob"]
+            }
+          }
+        },
+        {
+          "name": "Update Driver Location",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"x\": 2.5,\n  \"y\": 3.0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/drivers/d_bob/location",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "drivers", "d_bob", "location"]
+            }
+          }
+        },
+        {
+          "name": "Update Driver Status",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"AVAILABLE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/drivers/d_bob/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "drivers", "d_bob", "status"]
+            }
+          }
+        },
+        {
+          "name": "Get Driver Ride History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/drivers/d_bob/rides",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "drivers", "d_bob", "rides"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Coupons",
+      "item": [
+        {
+          "name": "Add Coupon",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"SAVE20\",\n  \"discountType\": \"PERCENTAGE\",\n  \"discountValue\": 20,\n  \"maxDiscount\": 50,\n  \"minRideFare\": 50,\n  \"usageLimit\": 100,\n  \"expiryDate\": \"2027-12-31T23:59:59.000Z\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/coupons",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "coupons"]
+            }
+          }
+        },
+        {
+          "name": "List All Coupons",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/coupons",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "coupons"]
+            }
+          }
+        },
+        {
+          "name": "Get Coupon by Code",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/coupons/SAVE20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "coupons", "SAVE20"]
+            }
+          }
+        },
+        {
+          "name": "Validate Coupon",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/coupons/SAVE20/validate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "coupons", "SAVE20", "validate"]
+            }
+          }
+        },
+        {
+          "name": "Delete Coupon",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/coupons/SAVE20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "coupons", "SAVE20"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Rides & Strategies",
+      "item": [
+        {
+          "name": "Book Ride (with Euclidean/Manhattan Strategy)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"u_alice\",\n  \"pickupLocation\": { \"x\": 0.0, \"y\": 0.0 },\n  \"dropLocation\": { \"x\": 6.0, \"y\": 8.0 },\n  \"requestedCarType\": \"HATCHBACK\",\n  \"maxRadiusKm\": 5.0,\n  \"couponCode\": \"SAVE20\",\n  \"distanceStrategy\": \"EUCLIDEAN\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/book",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "book"]
+            }
+          }
+        },
+        {
+          "name": "Start Ride",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/{{rideId}}/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "{{rideId}}", "start"]
+            }
+          }
+        },
+        {
+          "name": "End Ride",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actualEndLocation\": { \"x\": 6.0, \"y\": 8.0 }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/{{rideId}}/end",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "{{rideId}}", "end"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Ride",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Changed plans\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/{{rideId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "{{rideId}}", "cancel"]
+            }
+          }
+        },
+        {
+          "name": "Get Ride Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/{{rideId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "{{rideId}}"]
+            }
+          }
+        },
+        {
+          "name": "Switch Matching Strategy",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategy\": \"HIGHEST_RATED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/strategy",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "strategy"]
+            }
+          }
+        },
+        {
+          "name": "Get Distance Strategy",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/distance-strategy",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "distance-strategy"]
+            }
+          }
+        },
+        {
+          "name": "Switch Distance Strategy",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"strategy\": \"MANHATTAN\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/distance-strategy",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "distance-strategy"]
+            }
+          }
+        },
+        {
+          "name": "Calculate Distance (Euclidean)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": { \"x\": 0.0, \"y\": 0.0 },\n  \"to\": { \"x\": 6.0, \"y\": 8.0 },\n  \"strategy\": \"EUCLIDEAN\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/calculate-distance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "calculate-distance"]
+            }
+          }
+        },
+        {
+          "name": "Calculate Distance (Manhattan)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": { \"x\": 0.0, \"y\": 0.0 },\n  \"to\": { \"x\": 6.0, \"y\": 8.0 },\n  \"strategy\": \"MANHATTAN\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/calculate-distance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rides", "calculate-distance"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

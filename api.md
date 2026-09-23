@@ -366,10 +366,11 @@ To test the complete lifecycle in Postman or cURL, run these in order:
     "dropLocation": { "x": 6.0, "y": 8.0 },
     "requestedCarType": "HATCHBACK",
     "maxRadiusKm": 5.0,
-    "couponCode": "SAVE20"
+    "couponCode": "SAVE20",
+    "distanceStrategy": "EUCLIDEAN"
   }
   ```
-  *(Note: Distance between (0,0) and (6,8) is 10.0 km)*
+  *(Note: `distanceStrategy` is optional: `"EUCLIDEAN"` or `"MANHATTAN"`. Defaults to active service strategy)*
 - **cURL**:
   ```bash
   curl -X POST http://localhost:3000/api/rides/book \
@@ -380,7 +381,8 @@ To test the complete lifecycle in Postman or cURL, run these in order:
       "dropLocation": { "x": 6.0, "y": 8.0 },
       "requestedCarType": "HATCHBACK",
       "maxRadiusKm": 5.0,
-      "couponCode": "SAVE20"
+      "couponCode": "SAVE20",
+      "distanceStrategy": "EUCLIDEAN"
     }'
   ```
 - **Response `201 Created`**:
@@ -405,6 +407,15 @@ To test the complete lifecycle in Postman or cURL, run these in order:
   }
   ```
   *(💡 Save the returned `data.id` for start/end/cancel calls)*
+- **Constraint / Business Rule**:
+  - A rider cannot book a new ride if they already have an active ride (`REQUESTED` or `ONGOING`).
+  - Attempting to book returns HTTP `400`:
+    ```json
+    {
+      "success": false,
+      "error": "Rider u_alice already has an active ride (ride_...) with status 'REQUESTED'. Complete or cancel it before booking a new ride."
+    }
+    ```
 
 ---
 
@@ -535,6 +546,114 @@ To test the complete lifecycle in Postman or cURL, run these in order:
   {
     "success": true,
     "message": "Matching strategy set to Highest-Rated Driver Matching Strategy"
+  }
+  ```
+
+---
+
+### 5.7 Get Active Distance Strategy (Strategy Pattern)
+- **Method**: `GET`
+- **URL**: `http://localhost:3000/api/rides/distance-strategy`
+- **cURL**:
+  ```bash
+  curl -X GET http://localhost:3000/api/rides/distance-strategy
+  ```
+- **Response `200 OK`**:
+  ```json
+  {
+    "success": true,
+    "strategy": "EUCLIDEAN",
+    "availableStrategies": [
+      "EUCLIDEAN",
+      "MANHATTAN"
+    ]
+  }
+  ```
+
+---
+
+### 5.8 Switch Distance Strategy (Strategy Pattern)
+- **Method**: `PUT`
+- **URL**: `http://localhost:3000/api/rides/distance-strategy`
+- **Options**: `"EUCLIDEAN"` | `"MANHATTAN"`
+- **Body (JSON)**:
+  ```json
+  {
+    "strategy": "MANHATTAN"
+  }
+  ```
+- **cURL**:
+  ```bash
+  curl -X PUT http://localhost:3000/api/rides/distance-strategy \
+    -H "Content-Type: application/json" \
+    -d '{"strategy": "MANHATTAN"}'
+  ```
+- **Response `200 OK`**:
+  ```json
+  {
+    "success": true,
+    "message": "Distance calculation strategy set to MANHATTAN",
+    "strategy": "MANHATTAN"
+  }
+  ```
+
+---
+
+### 5.9 Direct Distance Calculation (Euclidean vs Manhattan)
+Calculate distance between any two 2D coordinates on-the-fly using Euclidean or Manhattan strategy:
+- **Method**: `POST`
+- **URL**: `http://localhost:3000/api/rides/calculate-distance`
+- **Formulae**:
+  - **Euclidean**: $\sqrt{(x_2 - x_1)^2 + (y_2 - y_1)^2}$ (Straight-line distance)
+  - **Manhattan**: $|x_2 - x_1| + |y_2 - y_1|$ (Taxicab / Grid distance)
+- **Body (JSON) — Euclidean Example**:
+  ```json
+  {
+    "from": { "x": 0.0, "y": 0.0 },
+    "to": { "x": 6.0, "y": 8.0 },
+    "strategy": "EUCLIDEAN"
+  }
+  ```
+- **Body (JSON) — Manhattan Example**:
+  ```json
+  {
+    "from": { "x": 0.0, "y": 0.0 },
+    "to": { "x": 6.0, "y": 8.0 },
+    "strategy": "MANHATTAN"
+  }
+  ```
+- **cURL (Euclidean)**:
+  ```bash
+  curl -X POST http://localhost:3000/api/rides/calculate-distance \
+    -H "Content-Type: application/json" \
+    -d '{"from": {"x": 0, "y": 0}, "to": {"x": 6, "y": 8}, "strategy": "EUCLIDEAN"}'
+  ```
+- **Response `200 OK` (Euclidean)**:
+  ```json
+  {
+    "success": true,
+    "from": { "x": 0, "y": 0 },
+    "to": { "x": 6, "y": 8 },
+    "distanceKm": 10,
+    "strategy": "EUCLIDEAN",
+    "strategyName": "Euclidean Distance Strategy"
+  }
+  ```
+- **cURL (Manhattan)**:
+  ```bash
+  curl -X POST http://localhost:3000/api/rides/calculate-distance \
+    -H "Content-Type: application/json" \
+    -d '{"from": {"x": 0, "y": 0}, "to": {"x": 6, "y": 8}, "strategy": "MANHATTAN"}'
+  ```
+- **Response `200 OK` (Manhattan)**:
+  ```json
+  {
+    "success": true,
+    "from": { "x": 0, "y": 0 },
+    "to": { "x": 6, "y": 8 },
+    "distanceKm": 14,
+    "strategy": "MANHATTAN",
+    "strategyName": "Manhattan Distance Strategy"
   }
   ```
 
