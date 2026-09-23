@@ -4,13 +4,6 @@ export interface Location {
   y: number;
 }
 
-/** Euclidean distance between two 2D points, rounded to 2 decimal places. */
-export function calculateDistance(a: Location, b: Location): number {
-  const dx = a.x - b.x;
-  const dy = a.y - b.y;
-  return Math.round(Math.sqrt(dx * dx + dy * dy) * 100) / 100;
-}
-
 // ─── Car Type ───
 export enum CarType {
   HATCHBACK = 'HATCHBACK',

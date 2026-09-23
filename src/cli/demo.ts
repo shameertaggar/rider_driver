@@ -24,7 +24,6 @@ function section(text: string) {
 
 function ok(msg: string) { console.log(`  ✅ ${msg}`); }
 function info(msg: string) { console.log(`     ${msg}`); }
-function warn(msg: string) { console.log(`  ⚠️  ${msg}`); }
 
 // ── Main Demo ──
 async function run() {

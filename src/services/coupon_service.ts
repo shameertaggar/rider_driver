@@ -1,4 +1,4 @@
-import { Coupon, DiscountType } from '../models/index.js';
+import { Coupon } from '../models/index.js';
 import { CouponRepository } from '../db/index.js';
 
 export class CouponService {
