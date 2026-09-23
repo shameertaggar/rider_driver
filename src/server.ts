@@ -34,6 +34,9 @@ app.listen(PORT, () => {
   console.log(`  PUT    /api/rides/:id/end        — End ride`);
   console.log(`  PUT    /api/rides/:id/cancel     — Cancel ride`);
   console.log(`  PUT    /api/rides/strategy       — Switch matching strategy`);
+  console.log(`  GET    /api/rides/distance-strategy — Get distance strategy`);
+  console.log(`  PUT    /api/rides/distance-strategy — Switch distance strategy`);
+  console.log(`  POST   /api/rides/calculate-distance — Calculate distance`);
   console.log(`  POST   /api/coupons              — Add coupon`);
   console.log(`  GET    /api/coupons              — List coupons`);
   console.log(`  GET    /api/coupons/:code/validate — Validate coupon`);

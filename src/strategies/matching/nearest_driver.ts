@@ -1,5 +1,6 @@
-import { Driver, Cab, CarType, Location, calculateDistance } from '../../models/index.js';
+import { Driver, Cab, CarType, Location } from '../../models/index.js';
 import { DriverMatchingStrategy, MatchCandidate, MatchResult } from './matching_strategy.js';
+import { DistanceStrategy, EuclideanDistanceStrategy } from '../distance/index.js';
 
 /**
  * Selects the nearest available driver within radius.
@@ -7,6 +8,16 @@ import { DriverMatchingStrategy, MatchCandidate, MatchResult } from './matching_
  */
 export class NearestDriverMatchingStrategy implements DriverMatchingStrategy {
   public readonly strategyName = 'NEAREST_DRIVER';
+
+  constructor(private distanceStrategy: DistanceStrategy = new EuclideanDistanceStrategy()) {}
+
+  public setDistanceStrategy(strategy: DistanceStrategy): void {
+    this.distanceStrategy = strategy;
+  }
+
+  public getDistanceStrategy(): DistanceStrategy {
+    return this.distanceStrategy;
+  }
 
   public findMatch(
     availableDrivers: Array<{ driver: Driver; cab: Cab }>,
@@ -17,7 +28,7 @@ export class NearestDriverMatchingStrategy implements DriverMatchingStrategy {
     // Calculate distances and filter within radius
     const withinRadius: MatchCandidate[] = [];
     for (const item of availableDrivers) {
-      const dist = calculateDistance(item.cab.currentLocation, pickupLocation);
+      const dist = this.distanceStrategy.calculate(item.cab.currentLocation, pickupLocation);
       if (dist <= maxRadiusKm) {
         withinRadius.push({ driver: item.driver, cab: item.cab, distanceKm: dist });
       }

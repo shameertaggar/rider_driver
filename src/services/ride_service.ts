@@ -1,5 +1,5 @@
 import {
-  Ride, RideStatus, CarType, Location, calculateDistance, DriverStatus,
+  Ride, RideStatus, CarType, Location, DriverStatus,
 } from '../models/index.js';
 import {
   UserRepository, DriverRepository, RideRepository, CouponRepository,
@@ -7,6 +7,7 @@ import {
 import {
   PricingStrategy, TieredPricingStrategy,
   DriverMatchingStrategy, NearestDriverMatchingStrategy,
+  DistanceStrategy, EuclideanDistanceStrategy, ManhattanDistanceStrategy,
 } from '../strategies/index.js';
 import { CouponService } from './coupon_service.js';
 
@@ -18,6 +19,7 @@ export interface BookRideDto {
   maxRadiusKm?: number;
   couponCode?: string;
   surgeMultiplier?: number;
+  distanceStrategy?: 'EUCLIDEAN' | 'MANHATTAN';
 }
 
 export class RideService {
@@ -28,6 +30,7 @@ export class RideService {
   private couponService: CouponService;
   private pricingStrategy: PricingStrategy;
   private matchingStrategy: DriverMatchingStrategy;
+  private distanceStrategy: DistanceStrategy;
   private defaultMaxRadiusKm = 5.0;
 
   constructor(
@@ -36,7 +39,8 @@ export class RideService {
     rideRepo = new RideRepository(),
     couponRepo = new CouponRepository(),
     pricingStrategy: PricingStrategy = new TieredPricingStrategy(),
-    matchingStrategy: DriverMatchingStrategy = new NearestDriverMatchingStrategy()
+    matchingStrategy: DriverMatchingStrategy = new NearestDriverMatchingStrategy(),
+    distanceStrategy: DistanceStrategy = new EuclideanDistanceStrategy()
   ) {
     this.userRepo = userRepo;
     this.driverRepo = driverRepo;
@@ -45,15 +49,46 @@ export class RideService {
     this.couponService = new CouponService(couponRepo);
     this.pricingStrategy = pricingStrategy;
     this.matchingStrategy = matchingStrategy;
+    this.distanceStrategy = distanceStrategy;
   }
 
   /** Switch matching strategy at runtime (Strategy Pattern). */
   public setMatchingStrategy(strategy: DriverMatchingStrategy): void {
     this.matchingStrategy = strategy;
+    if (this.matchingStrategy.setDistanceStrategy) {
+      this.matchingStrategy.setDistanceStrategy(this.distanceStrategy);
+    }
   }
 
   public getMatchingStrategy(): DriverMatchingStrategy {
     return this.matchingStrategy;
+  }
+
+  /** Switch distance calculation strategy at runtime (Strategy Pattern). */
+  public setDistanceStrategy(strategy: DistanceStrategy): void {
+    this.distanceStrategy = strategy;
+    if (this.matchingStrategy.setDistanceStrategy) {
+      this.matchingStrategy.setDistanceStrategy(strategy);
+    }
+  }
+
+  public getDistanceStrategy(): DistanceStrategy {
+    return this.distanceStrategy;
+  }
+
+  public calculateDistance(from: Location, to: Location, strategyType?: string): { distanceKm: number; strategy: string; strategyName: string } {
+    let strategy: DistanceStrategy = this.distanceStrategy;
+    if (strategyType === 'MANHATTAN') {
+      strategy = new ManhattanDistanceStrategy();
+    } else if (strategyType === 'EUCLIDEAN') {
+      strategy = new EuclideanDistanceStrategy();
+    }
+    const distanceKm = strategy.calculate(from, to);
+    return {
+      distanceKm,
+      strategy: strategy.strategyName,
+      strategyName: strategy instanceof ManhattanDistanceStrategy ? 'Manhattan Distance Strategy' : 'Euclidean Distance Strategy',
+    };
   }
 
   public setPricingStrategy(strategy: PricingStrategy): void {
@@ -65,7 +100,14 @@ export class RideService {
     const user = this.userRepo.findById(dto.userId);
     if (!user) throw new Error(`User ${dto.userId} does not exist`);
 
-    // 2. Validate coupon if provided
+    // 2. Prevent booking if rider already has an active ride (REQUESTED or ONGOING)
+    const activeRides = this.rideRepo.findOngoingRidesByUserId(dto.userId);
+    if (activeRides.length > 0) {
+      const active = activeRides[0];
+      throw new Error(`Rider ${dto.userId} already has an active ride (${active.id}) with status '${active.status}'. Complete or cancel it before booking a new ride.`);
+    }
+
+    // 3. Validate coupon if provided
     let validCoupon = undefined;
     if (dto.couponCode) {
       const result = this.couponService.validateCoupon(dto.couponCode);
@@ -110,6 +152,7 @@ export class RideService {
         dropLocation: { ...dto.dropLocation },
         status: RideStatus.REQUESTED,
         couponCode: validCoupon?.code,
+        distanceStrategy: dto.distanceStrategy ?? this.distanceStrategy.strategyName,
         bookedAt: new Date(),
       };
 
@@ -137,7 +180,10 @@ export class RideService {
     }
 
     const drop = actualEndLocation ?? { ...ride.dropLocation };
-    const distanceKm = calculateDistance(ride.pickupLocation, drop);
+    const distCalc: DistanceStrategy = ride.distanceStrategy === 'MANHATTAN'
+      ? new ManhattanDistanceStrategy()
+      : (ride.distanceStrategy === 'EUCLIDEAN' ? new EuclideanDistanceStrategy() : this.distanceStrategy);
+    const distanceKm = distCalc.calculate(ride.pickupLocation, drop);
 
     // Retrieve coupon if used
     const coupon = ride.couponCode ? this.couponRepo.findByCode(ride.couponCode) ?? undefined : undefined;

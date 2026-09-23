@@ -1,6 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { RideService } from '../services/ride_service.js';
-import { HighestRatedDriverMatchingStrategy, NearestDriverMatchingStrategy } from '../strategies/index.js';
+import {
+  HighestRatedDriverMatchingStrategy,
+  NearestDriverMatchingStrategy,
+  EuclideanDistanceStrategy,
+  ManhattanDistanceStrategy,
+} from '../strategies/index.js';
 
 const router = Router();
 const rideService = new RideService();
@@ -40,6 +45,52 @@ router.put('/:id/cancel', (req: Request, res: Response) => {
   try {
     const ride = rideService.cancelRide(req.params.id as string, req.body.reason);
     res.json({ success: true, data: ride });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// GET /api/rides/distance-strategy — Get active distance strategy
+router.get('/distance-strategy', (_req: Request, res: Response) => {
+  const current = rideService.getDistanceStrategy();
+  res.json({
+    success: true,
+    strategy: current.strategyName,
+    availableStrategies: ['EUCLIDEAN', 'MANHATTAN'],
+  });
+});
+
+// PUT /api/rides/distance-strategy — Switch distance calculation strategy
+router.put('/distance-strategy', (req: Request, res: Response) => {
+  const { strategy } = req.body;
+  if (strategy === 'MANHATTAN') {
+    rideService.setDistanceStrategy(new ManhattanDistanceStrategy());
+  } else {
+    rideService.setDistanceStrategy(new EuclideanDistanceStrategy());
+  }
+  const current = rideService.getDistanceStrategy();
+  res.json({
+    success: true,
+    message: `Distance calculation strategy set to ${current.strategyName}`,
+    strategy: current.strategyName,
+  });
+});
+
+// POST /api/rides/calculate-distance — Calculate distance between coordinates
+router.post('/calculate-distance', (req: Request, res: Response) => {
+  try {
+    const { from, to, strategy } = req.body;
+    if (!from || !to || from.x === undefined || from.y === undefined || to.x === undefined || to.y === undefined) {
+      res.status(400).json({ success: false, error: 'Both from {x, y} and to {x, y} coordinates are required' });
+      return;
+    }
+    const result = rideService.calculateDistance(from, to, strategy);
+    res.json({
+      success: true,
+      from,
+      to,
+      ...result,
+    });
   } catch (err: any) {
     res.status(400).json({ success: false, error: err.message });
   }

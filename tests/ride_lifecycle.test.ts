@@ -143,4 +143,63 @@ describe('Ride Lifecycle', () => {
       })
     ).toThrow(/No drivers available within/);
   });
+
+  it('prevents a rider from booking a new ride while an active ride is REQUESTED or ONGOING', () => {
+    userService.registerUser({ id: 'u1', name: 'Alice' });
+    driverService.registerDriver({ id: 'd1', name: 'Driver1' });
+    driverService.registerCab({
+      id: 'c1', driverId: 'd1', carType: CarType.HATCHBACK,
+      licensePlate: 'KA-01-1111', initialLocation: { x: 0, y: 0 },
+    });
+    driverService.registerDriver({ id: 'd2', name: 'Driver2' });
+    driverService.registerCab({
+      id: 'c2', driverId: 'd2', carType: CarType.HATCHBACK,
+      licensePlate: 'KA-01-2222', initialLocation: { x: 1, y: 1 },
+    });
+
+    // 1. Book first ride (status: REQUESTED)
+    const r1 = rideService.bookRide({
+      userId: 'u1', pickupLocation: { x: 0, y: 0 },
+      dropLocation: { x: 2, y: 2 }, requestedCarType: CarType.HATCHBACK,
+    });
+
+    // 2. Attempt to book second ride while first is REQUESTED → throws
+    expect(() =>
+      rideService.bookRide({
+        userId: 'u1', pickupLocation: { x: 0, y: 0 },
+        dropLocation: { x: 3, y: 3 }, requestedCarType: CarType.HATCHBACK,
+      })
+    ).toThrow(/already has an active ride/);
+
+    // 3. Start first ride (status: ONGOING)
+    rideService.startRide(r1.id);
+
+    // 4. Attempt to book while ONGOING → still throws
+    expect(() =>
+      rideService.bookRide({
+        userId: 'u1', pickupLocation: { x: 0, y: 0 },
+        dropLocation: { x: 3, y: 3 }, requestedCarType: CarType.HATCHBACK,
+      })
+    ).toThrow(/already has an active ride/);
+
+    // 5. Complete first ride
+    rideService.endRide(r1.id);
+
+    // 6. Now booking a new ride succeeds
+    const r2 = rideService.bookRide({
+      userId: 'u1', pickupLocation: { x: 0, y: 0 },
+      dropLocation: { x: 3, y: 3 }, requestedCarType: CarType.HATCHBACK,
+    });
+    expect(r2.id).toBeDefined();
+
+    // 7. Cancel r2
+    rideService.cancelRide(r2.id, 'User cancelled');
+
+    // 8. Booking again succeeds after cancellation
+    const r3 = rideService.bookRide({
+      userId: 'u1', pickupLocation: { x: 0, y: 0 },
+      dropLocation: { x: 4, y: 4 }, requestedCarType: CarType.HATCHBACK,
+    });
+    expect(r3.id).toBeDefined();
+  });
 });

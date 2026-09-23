@@ -130,4 +130,5 @@ export interface Ride {
   cancelledAt?: Date;
   cancellationFee?: number;
   cancellationReason?: string;
+  distanceStrategy?: string;
 }

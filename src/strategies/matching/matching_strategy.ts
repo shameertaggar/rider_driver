@@ -1,4 +1,5 @@
 import { Driver, Cab, CarType, Location } from '../../models/index.js';
+import { DistanceStrategy } from '../distance/distance_strategy.js';
 
 export interface MatchCandidate {
   driver: Driver;
@@ -25,4 +26,7 @@ export interface DriverMatchingStrategy {
     maxRadiusKm: number,
     requestedCarType: CarType
   ): MatchResult | null;
+
+  setDistanceStrategy?(strategy: DistanceStrategy): void;
+  getDistanceStrategy?(): DistanceStrategy;
 }
