@@ -73,7 +73,7 @@ describe('Comprehensive Edge Cases Checklist Tests', () => {
         driverService.registerCab({
           id: 'c1',
           driverId: 'd1',
-          carType: 'HELICOPTER' as any,
+          carType: 'HELICOPTER' as unknown as CarType,
           licensePlate: 'ABC-123',
           initialLocation: { x: 0, y: 0 },
         })
@@ -86,7 +86,7 @@ describe('Comprehensive Edge Cases Checklist Tests', () => {
         driverService.registerCab({
           id: 'c1',
           driverId: 'd1',
-          carType: undefined as any,
+          carType: undefined as unknown as CarType,
           licensePlate: 'ABC-123',
           initialLocation: { x: 0, y: 0 },
         })
@@ -382,7 +382,7 @@ describe('Comprehensive Edge Cases Checklist Tests', () => {
     });
 
     it('Missing latitude/longitude in validateGeoCoordinates throws error', () => {
-      expect(() => validateGeoCoordinates(undefined as any, 0)).toThrow('Missing latitude/longitude');
+      expect(() => validateGeoCoordinates(undefined as unknown as number, 0)).toThrow('Missing latitude/longitude');
     });
 
     it('Driver location updated while on a ride', () => {
@@ -637,7 +637,7 @@ describe('Comprehensive Edge Cases Checklist Tests', () => {
           userId: 'u1',
           pickupLocation: { x: 0, y: 0 },
           dropLocation: { x: 2, y: 0 },
-          requestedCarType: 'BOAT' as any,
+          requestedCarType: 'BOAT' as unknown as CarType,
         })
       ).toThrow('Invalid or missing requested car type');
     });
