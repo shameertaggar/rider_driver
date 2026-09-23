@@ -8,7 +8,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "demo": "tsx src/cli/demo.ts",
-    "start": "tsx src/index.ts"
+    "start": "tsx src/server.ts",
+    "dev": "tsx watch src/server.ts"
   },
   "repository": {
     "type": "git",
@@ -22,9 +23,13 @@
   },
   "homepage": "https://github.com/shameertaggar/rider_driver#readme",
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^26.6.2",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.0.1"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
   }
 }
